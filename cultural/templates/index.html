@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang='es'>
+<head>
+    <title>Actividades culturales en Madrid</title>
+    <meta charset='UTF-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="/static/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/static/css/custom.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script src="/static/js/bootstrap.min.js"></script>
+
+    <script>
+    function addScore(act)
+    {
+    var xmlhttp;
+    if (window.XMLHttpRequest)
+      {// code for IE7+, Firefox, Chrome, Opera, Safari
+      xmlhttp=new XMLHttpRequest();
+      }
+    else
+      {// code for IE6, IE5
+      xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+      }
+    xmlhttp.onreadystatechange=function()
+      {
+      if (xmlhttp.readyState==4 && xmlhttp.status==200)
+        {
+        document.getElementById("myDiv").innerHTML=xmlhttp.responseText;
+        }
+      }
+
+      xmlhttp.open("GET", "/score/" + act, true);
+      xmlhttp.send();
+    }
+    </script>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-1">
+                    <span class="sr-only">Menu</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <p class="navbar-brand">ConoceMadrid</p>
+            </div>
+            <div class="collapse navbar-collapse" id="navbar-1">
+                <ul id="menu" class="nav navbar-nav">
+                    {% if main == None %}
+                    <li><a href="/">Inicio</a></li>
+                    {% endif %}
+                    <li><a href="/todas">Todas</a></li>
+                    <li><a href="/ayuda">Ayuda</a></li>
+                </ul>
+
+                {% if authenticated %}
+                    <div id="logout" class="navbar-right">
+                        <ul class="nav navbar-nav">
+                            <li class="active"><a href="/{{ user }}/pg=0">{{ user }}</a></li>
+                            <li><a href="/logout">Logout</a></li>
+                        </ul>
+                        
+                    </div>
+                {% else %}
+                    <form id="login" action="/login" class="navbar-form navbar-right" role="search" method="POST">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            {{ form.username }}
+                        </div>
+                        <div class="form-group">
+                            {{ form.password }}
+                        </div>
+                        <input type="submit" value="Log In" class="btn btn-primary">
+                    </form>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    {% if help %}
+    <div class="container-fluid">
+        <div class="col-xs-12">
+            <br><br><br>
+            <h2>Comportamiento general</h2>
+            <br>
+            <p>
+                <strong>Conoce Madrid</strong> nos ofrece las actividades culturales y de ocio que tendrán lugar en la ciudad de Madrid en los próximos 100 días. <br>
+                Esta información se obtiene de la página del ayuntamiento de Madrid a traves del canal XML que el sitio nos ofrece. <br>
+                <br>
+                El sitio web nos ofrece la posibilidad de tener una cuenta que nos permitirá disponer de una página personal en la que tendremos la información de las actividades que hayamos seleccionado. <br>
+                Además, un usuario registrado y autenticado podrá actualizar las actividades del sitio web. <br>
+            </p>
+        </div>
+        <div class="col-xs-4">
+            <h3>Página principal</h3>
+            <br>
+            <p>
+                La página principal nos muestra las próximas 10 actividades que vayan a tener lugar.
+            </p>
+        </div>
+        <div class="col-xs-4">
+            <h3>Todas las actividades</h3>
+            <br>
+            <p>
+                En esta página se mostrarán todas las actividades disponibles en los próximos 100 días y se nos permitirá filtrarlas según un patrón de búsqueda.
+            </p>
+        </div>
+        <div class="col-xs-4">
+            <h3>Página personal</h3>
+            <br>
+            <p>
+                Cada usuario dispondrá de su página personal en la que podrá ver las actividades que haya seleccionado.
+            </p>
+        </div>
+        <div class="col-xs-12">
+            <h4>Actividades</h4>
+            <p>
+                Para cada actividad dispondremos de un enlace de acceso a la información completa de dicha actividad. <br>
+                Además, podrémos acceder a la página del ayuntamiento para obtener información extra.
+            </p>
+        </div>
+
+        <div class="col-xs-12">
+            <h4>Interfaz Privada</h4>
+            <p>
+                El estar autenticados en la página nos permitirá ver el número de actividades totales del sitio web, poder añadir actividades a nuestra página personal y modificar ciertos campos de estilo para nuestro perfil de usuario así como poder actualizar la lista de actividades.
+            </p>
+        </div>
+    </div>
+    {% else %}
+    <div class="container-fluid">
+        <!-- Banner -->
+        <header id="banner" class="{{styleParam.colour}} jumbotron">
+            <h1>Conoce Madrid</h1>
+            <h2>Actividades culturales y de ocio en la Ciudad de Madrid</h2>
+        </header>
+        <div class="row">
+            <div class="col-xs-12">
+                <h1 class="title">
+                    {% if notInUser %}
+                        {{ title }}
+                    {% else %}
+                        {% for s in styles %}
+                            {% ifequal s.user userPage %}
+                                {{ s.title }}
+                            {% endifequal %}
+                        {% endfor %}
+                    {% endif %}
+                    {% if main %}
+                    <small><a href="/rss"><img src="/static/rss.png" alt="rss" width="25" height="25"></a></small>
+                    {% endif %}
+                    {% if notInUser == None %}
+                    <small><a href="/{{ userPage }}/rss"><img src="/static/rss.png" alt="rss" width="25" height="25"></a></small>
+                    {% endif %}
+                </h1>
+            </div>
+        </div>
+        
+        <!-- Header, title and forms -->
+        {% if all %}
+        <div class="row">
+            <div class="col-xs-6">
+                {% if authenticated %}
+                <h4 class="text-muted">
+                    Número actual de actividades: {{ activities|length }}
+                </h4>
+                {% endif %}
+            </div>
+            <div class="col-xs-6">
+                {% if authenticated %}
+                <h4 class="text-muted">
+                    Última actualización: {{ update }}
+                </h4>
+                {% endif %}
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-xs-6">
+                <form action="/todas/filter" method="POST">
+                    {% csrf_token %}
+                    {{ search.search }}
+                    {{ search.price }}
+                    <input type="submit" value="Busca" class="btn btn-primary">
+                </form>
+            </div>
+            {% if authenticated %}
+            <div class="col-xs-6">
+                <form action="/update" method="GET">
+                    {% csrf_token %}
+                    <h4>
+                        Actualiza la lista de actividades: 
+                        <input type="submit" value="Update" class="btn btn-primary">
+                    </h4>
+                </form>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <!-- row 2 (One or multiple activities)-->
+        <div class="row">
+            {% if notInUser %}
+            <div class="col-xs-12">
+                {% for a in activities %}
+                <div class="well well-sm activity">
+                    <h3>{{ a.title }}.</h3>
+                    {% if inAct %}
+                    <form action="/score/{{ a.id }}" method="GET">     
+                        <litle class="text-muted">Score: <span id="myDiv">{{ a.score }}</span></litle>
+                        <button type="button"class="btn btn-xs btn-success" onclick="addScore({{ a.id }})">+1</button>
+                    </form>
+                    {% endif %}
+                    {{ a.eventType }}<br>
+                    Precio: {{ a.price }}<br>
+                    Comienza en: {{ a.time }}<br>
+                    {{ a.duration }}<br>
+                    {% ifequal a.longDuration 1 %}
+                        Evento de larga duracion<br>
+                    {% endifequal %}
+                    {% for a2 in chosen %}
+                        {% if a.id == a2.activityID %}
+                            <!-- Eliminar contenido cuando se termine -->
+                            Elegida en: {{ a2.time }}
+                        {% endif %}
+                    {% endfor %}
+                    {% if description %}
+                        <br>{{ description|safe }}
+                    {% endif %}
+                    {% if inAct == None %}
+                        {% if authenticated %}
+                            <br>
+                            <form action="/{{ user }}/add" method="POST">
+                            {% csrf_token %}
+                                <input type="hidden" name="activity" value="{{ a.id }}">
+                                <button class="btn btn-primary">Me interesa</button>
+                            </form>
+                            <br>
+                            <form action="/comment/{{ a.id }}" method="POST">
+                            {% csrf_token %}
+                                <div class="form-group">
+                                    {{ comment.comment }}
+                                </div>
+                                <button class="btn btn-primary">Comentar</button>
+                            </form>
+                        {% endif %}
+                        <br>
+                        <a href="/actividad/{{ a.id }}">Más información</a><br>
+                    {% else %}
+                        <a href="{{ a.description }}">Más información</a><br>
+                    {% endif %}
+                    <br>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="col-xs-12">
+                {% for a in group %}
+                    <div class="well well-sm activity">
+                        <div class="row">
+                            <h3>{{ a.title }}</h3>
+                            {{ a.time }}<br>
+                            <a href="/actividad/{{ a.id }}">Más información</a><br>
+                        </div>
+                        <div class="col-xs-12"><hr></div>
+                        <div class="row">
+                            <h4><strong>Comentarios</strong></h4>
+                            {% for c in comments %}                            
+                                {% ifequal c.activity a %}
+                                        <p><span class="text-muted">{{ c.user }}: </span>{{ c.comment }}</p>
+                                {% endifequal %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endfor %}
+                 <ul class="pager">
+                    {% if i != 0 %}
+                    <li class="previous"><a href="/{{ username }}/pg={{ i|add:'-1' }}">Previous</a></li>
+                    {% endif %}
+                    {% if i != length %}
+                    <li class="next"><a href="/{{ username }}/pg={{ i|add:'+1' }}">Next</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+            {% endif %}
+        </div>
+        <!-- row 3 (Only in main page)-->
+        {% if users %}
+        <h1 class="title">{{ title2 }}</h1>
+        <div class="user row">
+            {% for u in users %}
+            <div class="col-xs-3">
+                <div class="thumbnail">
+                    <div class="caption">
+                            Usuario: {{ u.username }}<br>
+                        {% for s in styles %}
+                            {% ifequal u.username s.user %}
+                                <a href="/{{ u.username }}/pg=0">{{ s.title }}</a><br>
+                                <span class="text-muted">Descripción: {{ s.description }}</span><br><br>
+                            {% endifequal %}
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <footer class="text-muted">
+        {% if notInUser == None %}
+            {% if authenticated %}
+                <form action="/style" method="POST">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        Título <br>
+                        {{ style.title}} <br>
+                        Descripción <br>
+                        {{ style.description }}
+                        <br>
+                    </div>
+                    <label class="checkbox-inline">
+                        Color {{ style.color }}
+                    </label>
+                    <br>
+                    <input type="submit" value="Cambia" class="btn btn-primary">
+                </form>
+            {% endif %}
+            {% endif %}
+            <br>
+            <br>
+        <span class="glyphicon glyphicon-copyright-mark"></span> Joel Peralta Rodríguez
+    </footer>
+</html>

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+
+<channel>
+    <title>
+        {% if main %}
+        Conoce Madrid: Próximas 10 actividades
+        {% else %}
+        Conoce Madrid: Actividades del usuario {{ user }}
+        {% endif %}
+    </title>
+
+    <link>http://{{host}}</link>
+    <description>
+        {% if main %}
+        Sitio en el que encontraremos las próximas 10 actividades culturales y de ocio en la ciudad de Madrid.
+        {% else %}
+        Sitio en el que encontramos las actividades culturales y de ocio en la ciudad de Madrid seleccionadas por el usuario {{ user }}.
+        {% endif %}
+    </description>
+    
+    {% for a in activities %}
+    <item>
+        <title>{{ a.title }}</title>
+        <description>Tipo: {{ a.eventType }}
+            {% ifequal a.price Gratuito %}
+                El evento es {{ a.price }}.
+            {% else %}
+                El precio del evento es de {{ a.price }}.
+            {% endifequal %}
+            Se producirá en {{ a.time }}
+            y concluirá en {{ a.endTime }}
+            {% ifequal a.longDuration 1 %}
+                    Este evento es de larga duracion.
+            {% endifequal %}
+        </description>
+        <link>/actividad/{{ a.id }}"</link>
+    </item>
+    {% endfor %}
+
+</channel>
